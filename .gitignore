@@ -1,7 +1,7 @@
 # Ignore everything in data and job_info folders
 /data/*
-/job_info/*
+#/job_info/*
 
 # But keep the folders themselves (optional - uncomment if you want to track empty folders)
 !/data/.gitkeep
-!/job_info/.gitkeep
+#!/job_info/.gitkeep
