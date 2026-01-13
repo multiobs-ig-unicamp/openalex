@@ -77,7 +77,7 @@ def select_chunk(job_oa):
 
     objects = list(T['objects'])
 
-    job_oa['files_job'] = job_oa['files_job'][1:]
+    job_oa['files_job'] = job_oa['files_job'].remove(chunk_file)
     job_oa['files_job_running'] = job_oa['files_job_running'].append(chunk_file)
 
     update_job_status(job_oa)
@@ -153,6 +153,8 @@ def download_upload(job_oa):
             print(f"Processed object: {p}")
 
         job_oa['files_job_running'].remove(chunk_file)
+        if len(job_oa['files_job_running']) == 0:
+            job_oa['files_job_running'] = []
         job_oa = update_job_status(job_oa)
     else:
         print("No more pieces to process.")
