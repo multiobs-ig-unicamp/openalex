@@ -9,7 +9,6 @@
   "total_chunks": 100,
   "workload_file": "works_objects.csv",
   "files_job": [
-    "./job_info/chunk_19_works.csv",
     "./job_info/chunk_20_works.csv",
     "./job_info/chunk_21_works.csv",
     "./job_info/chunk_22_works.csv",
@@ -90,5 +89,6 @@
     "./job_info/chunk_97_works.csv",
     "./job_info/chunk_98_works.csv",
     "./job_info/chunk_99_works.csv"
-  ]
+  ],
+  "files_job_running": null
 }

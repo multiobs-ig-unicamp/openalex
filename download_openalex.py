@@ -24,6 +24,24 @@ job_oa = {
 
 job_info = './job_info/'
 
+def update_job_status(job_oa):
+
+    filename = job_info+'job_'+job_oa['entity']+'.json'
+
+    with open(filename, 'w') as json_file:
+        json.dump(job_oa, json_file, indent=2)
+
+    return job_oa
+
+def read_job_status(entity):
+
+    filename = job_info+'job_'+entity+'.json'
+
+    with open(filename, 'r') as json_file:
+        job_oa = json.load(json_file)
+
+    return job_oa
+
 def list_objects(job_oa):
 
     bucket_name = job_oa['bucket_name']
@@ -53,9 +71,6 @@ def list_objects(job_oa):
 
 def select_chunk(job_oa):
 
-    job_oa_new = json.load(open(job_info+f"job_{job_oa['entity']}.json"))
-    job_oa.update(job_oa_new)
-
     chunk_file = job_oa['files_job'][0]
 
     T = pd.read_csv(chunk_file)
@@ -63,11 +78,12 @@ def select_chunk(job_oa):
     objects = list(T['objects'])
 
     job_oa['files_job'] = job_oa['files_job'][1:]
-    json.dump(job_oa, open(job_info+f"job_{job_oa['entity']}.json", 'w'), indent=2)
+    job_oa['files_job_running'] = job_oa['files_job_running'].append(chunk_file)
 
-    print(objects)
+    update_job_status(job_oa)
+    print(f"{len(objects)} selected to process from {chunk_file}")
 
-    return objects
+    return objects, chunk_file
 
 
 def create_dataset(dataset_id):
@@ -125,7 +141,7 @@ def download_upload(job_oa):
     entity = job_oa['entity']  
     entity_singular = job_oa['entity_singular']
     bucket_name = job_oa['bucket_name']
-    pieces = select_chunk(job_oa)
+    pieces, chunk_file = select_chunk(job_oa)
     if len(pieces) > 1:
         for p in pieces:
             fp = download_object(bucket_name, p)
@@ -135,6 +151,9 @@ def download_upload(job_oa):
             os.remove(fp)
 
             print(f"Processed object: {p}")
+
+        job_oa['files_job_running'].remove(chunk_file)
+        job_oa = update_job_status(job_oa)
     else:
         print("No more pieces to process.")
 
@@ -147,6 +166,8 @@ def configure_job(job_oa):
 
     if os.path.exists(filename):
         print(f"Existing job for {job_oa['entity']}. Continuing...")
+
+        job_oa = read_job_status(job_oa['entity'])
         return job_oa
     else:
         print(f"Create job file in: {filename} for entity: {job_oa['entity']}.")
@@ -154,9 +175,6 @@ def configure_job(job_oa):
         list_objects(job_oa)
         create_dataset(job_oa['dataset_id'])
         os.makedirs(job_oa['prefix'], exist_ok=True)
-
-        with open(filename, 'w') as json_file:
-            json.dump(job_oa, json_file, indent=2)
 
         split_job(job_oa, total_chunks=job_oa['total_chunks'])
 
@@ -169,13 +187,14 @@ def split_job(job_oa, total_chunks):
     chunk_size = total_objects // total_chunks + 1
     files_job = []
     for i in range(total_chunks):
-        chunk = T.loc[i*chunk_size:(i+1)*chunk_size,'objects']
+        chunk = T.loc[i*chunk_size:((i+1)*chunk_size-1),'objects']
         file_job_name = job_info+f"chunk_{i}_{job_oa['entity']}.csv"
         files_job.append(file_job_name)
         chunk.to_csv(file_job_name, index=False)
 
     job_oa['files_job'] = files_job
-    json.dump(job_oa, open(job_info+f"job_{job_oa['entity']}.json", 'w'), indent=2)
+    job_oa['files_job_running'] = []
+    update_job_status(job_oa)
 
     return job_oa
 
