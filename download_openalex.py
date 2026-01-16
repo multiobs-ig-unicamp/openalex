@@ -11,16 +11,6 @@ import json
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
-job_oa = {
-        'bucket_name': 'openalex',  
-        'prefix': "data/works/",
-        'entity': "works",
-        'entity_singular': "work",
-        'project_id': 'insyspo',
-        'dataset': 'projectdb_openalex_2025_12',
-        'dataset_id': 'insyspo.projectdb_openalex_2025_12',
-        'total_chunks': 100
-}
 
 job_info = './job_info/'
 
@@ -77,13 +67,12 @@ def select_chunk(job_oa):
 
     objects = list(T['objects'])
 
-    job_oa['files_job'] = job_oa['files_job'].remove(chunk_file)
-    job_oa['files_job_running'] = job_oa['files_job_running'].append(chunk_file)
-
-    update_job_status(job_oa)
+    job_oa['files_job'].remove(chunk_file)
+    job_oa['files_job_running'].append(chunk_file)
+    
     print(f"{len(objects)} selected to process from {chunk_file}")
 
-    return objects, chunk_file
+    return objects, chunk_file, update_job_status(job_oa)
 
 
 def create_dataset(dataset_id):
@@ -141,7 +130,8 @@ def download_upload(job_oa):
     entity = job_oa['entity']  
     entity_singular = job_oa['entity_singular']
     bucket_name = job_oa['bucket_name']
-    pieces, chunk_file = select_chunk(job_oa)
+    pieces, chunk_file, job_oa = select_chunk(job_oa)
+    print(job_oa)
     if len(pieces) > 1:
         for p in pieces:
             fp = download_object(bucket_name, p)
@@ -158,6 +148,7 @@ def download_upload(job_oa):
         job_oa = update_job_status(job_oa)
     else:
         print("No more pieces to process.")
+        print(job_oa)
 
 
 def configure_job(job_oa):
@@ -202,17 +193,20 @@ def split_job(job_oa, total_chunks):
 
 
 
-def prepare_job(job_oa):
+def prepare_job(entity, entity_singular):
+
+    job_oa = {
+        'bucket_name': 'openalex',  
+        'prefix': "data/works/",
+        'entity': entity,
+        'entity_singular': entity_singular,
+        'project_id': 'insyspo',
+        'dataset': 'projectdb_openalex_2025_12',
+        'dataset_id': 'insyspo.projectdb_openalex_2025_12',
+        'total_chunks': 100
+    }
+
+
     job_oa = configure_job(job_oa)
 
     return job_oa
-
-if __name__ == "__main__":
-
-
-    job_oa = prepare_job(job_oa)
-    download_upload(job_oa)
-
-    print(job_oa)
-
- 
