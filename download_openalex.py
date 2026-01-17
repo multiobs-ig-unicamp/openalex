@@ -7,6 +7,7 @@ import os
 import glob
 import pandas as pd
 import json
+import logging
 
 from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
@@ -69,8 +70,8 @@ def select_chunk(job_oa):
 
     job_oa['files_job'].remove(chunk_file)
     job_oa['files_job_running'].append(chunk_file)
-    
-    print(f"{len(objects)} selected to process from {chunk_file}")
+
+    logging.info(f"{len(objects)} selected to process from {chunk_file}")
 
     return objects, chunk_file, update_job_status(job_oa)
 
@@ -81,14 +82,14 @@ def create_dataset(dataset_id):
 
     try:
         bq_client.get_dataset(dataset_id)  # Make an API request.
-        print("Dataset {} already exists".format(dataset_id))
+        logging.info("Dataset {} already exists".format(dataset_id))
     except NotFound:
         dataset = bigquery.Dataset(dataset_id)
 
         dataset.location = "US"
 
         dataset = bq_client.create_dataset(dataset, timeout=30)  
-        print("Created dataset {}.{}".format(bq_client.project, dataset.dataset_id))
+        logging.info("Created dataset {}.{}".format(bq_client.project, dataset.dataset_id))
 
 def upload_bigquery(file_path, table_id, entity_singular):
 
@@ -107,7 +108,7 @@ def upload_bigquery(file_path, table_id, entity_singular):
     job.result() 
 
     table = bq_client.get_table(table_id)
-    print(
+    logging.info(
         f"Loaded {table.num_rows} rows and {len(table.schema)} columns to {table_id}"
     )
 
@@ -131,24 +132,25 @@ def download_upload(job_oa):
     entity_singular = job_oa['entity_singular']
     bucket_name = job_oa['bucket_name']
     pieces, chunk_file, job_oa = select_chunk(job_oa)
-    print(job_oa)
+
     if len(pieces) > 1:
         for p in pieces:
+            logging.info(f"Downloading object: {p}")
             fp = download_object(bucket_name, p)
 
             upload_bigquery(fp, dataset+'.'+entity, entity_singular)
 
             os.remove(fp)
 
-            print(f"Processed object: {p}")
+            logging.info(f"Processed object: {p}")
 
         job_oa['files_job_running'].remove(chunk_file)
         if len(job_oa['files_job_running']) == 0:
             job_oa['files_job_running'] = []
         job_oa = update_job_status(job_oa)
     else:
-        print("No more pieces to process.")
-        print(job_oa)
+        logging.info("No more pieces to process.")
+
 
 
 def configure_job(job_oa):
@@ -158,12 +160,12 @@ def configure_job(job_oa):
     filename = job_info+'job_'+job_oa['entity']+'.json'
 
     if os.path.exists(filename):
-        print(f"Existing job for {job_oa['entity']}. Continuing...")
 
+        logging.info(f"Existing job for {job_oa['entity']}. Continuing...") 
         job_oa = read_job_status(job_oa['entity'])
         return job_oa
     else:
-        print(f"Create job file in: {filename} for entity: {job_oa['entity']}.")
+        logging.info(f"Create job file in: {filename} for entity: {job_oa['entity']}.")
 
         list_objects(job_oa)
         create_dataset(job_oa['dataset_id'])
@@ -175,6 +177,7 @@ def configure_job(job_oa):
 
 def split_job(job_oa, total_chunks):
 
+    logging.info(f"Splitting workload into {total_chunks} chunks.")
     T = pd.read_csv(job_info+job_oa['workload_file'])
     total_objects = T.shape[0]
     chunk_size = total_objects // total_chunks + 1
@@ -189,6 +192,8 @@ def split_job(job_oa, total_chunks):
     job_oa['files_job_running'] = []
     update_job_status(job_oa)
 
+    logging.info(f"Created {len(files_job)} chunk files for processing.")   
+
     return job_oa
 
 
@@ -200,9 +205,9 @@ def prepare_job(entity, entity_singular):
         'prefix': "data/works/",
         'entity': entity,
         'entity_singular': entity_singular,
-        'project_id': 'insyspo',
-        'dataset': 'projectdb_openalex_2025_12',
-        'dataset_id': 'insyspo.projectdb_openalex_2025_12',
+        'project_id': 'multiobs',
+        'dataset': 'projectdb_openalex_2026_01',
+        'dataset_id': 'multiobs.projectdb_openalex_2026_01',
         'total_chunks': 100
     }
 
