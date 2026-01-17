@@ -13,6 +13,7 @@ from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
 
+logging.basicConfig(filename='app.log', level=logging.DEBUG)
 job_info = './job_info/'
 
 def update_job_status(job_oa):
@@ -213,5 +214,8 @@ def prepare_job(entity, entity_singular):
 
 
     job_oa = configure_job(job_oa)
+
+    logging.info(f"Prepared job for entity: {entity}.")
+    logging.info(f"Job configuration: {job_oa}.")
 
     return job_oa
