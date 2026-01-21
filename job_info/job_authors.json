@@ -1,0 +1,20 @@
+{
+  "bucket_name": "openalex",
+  "prefix": "data/authors/",
+  "entity": "authors",
+  "entity_singular": "author",
+  "project_id": "multiobs",
+  "dataset": "projectdb_openalex_2026_01",
+  "dataset_id": "multiobs.projectdb_openalex_2026_01",
+  "total_chunks": 5,
+  "workload_file": "authors_objects.csv",
+  "files_job": [
+    "./job_info/chunk_1_authors.csv",
+    "./job_info/chunk_2_authors.csv",
+    "./job_info/chunk_3_authors.csv",
+    "./job_info/chunk_4_authors.csv"
+  ],
+  "files_job_running": [
+    "./job_info/chunk_0_authors.csv"
+  ]
+}

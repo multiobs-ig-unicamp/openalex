@@ -203,13 +203,13 @@ def prepare_job(entity, entity_singular):
 
     job_oa = {
         'bucket_name': 'openalex',  
-        'prefix': "data/works/",
+        'prefix': "data/"+entity+"/",
         'entity': entity,
         'entity_singular': entity_singular,
         'project_id': 'multiobs',
         'dataset': 'projectdb_openalex_2026_01',
         'dataset_id': 'multiobs.projectdb_openalex_2026_01',
-        'total_chunks': 100
+        'total_chunks': 5
     }
 
 
