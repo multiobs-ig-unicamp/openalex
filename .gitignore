@@ -5,3 +5,6 @@
 # But keep the folders themselves (optional - uncomment if you want to track empty folders)
 !/data/.gitkeep
 #!/job_info/.gitkeep
+venv
+venv/
+__pycache__
