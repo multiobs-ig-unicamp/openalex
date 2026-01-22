@@ -9,9 +9,10 @@
   "total_chunks": 5,
   "workload_file": "authors_objects.csv",
   "files_job": [
-    "./job_info/chunk_2_authors.csv",
     "./job_info/chunk_3_authors.csv",
     "./job_info/chunk_4_authors.csv"
   ],
-  "files_job_running": []
+  "files_job_running": [
+    "./job_info/chunk_2_authors.csv"
+  ]
 }

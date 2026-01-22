@@ -209,7 +209,7 @@ def prepare_job(entity, entity_singular):
         'project_id': 'multiobs',
         'dataset': 'projectdb_openalex_2026_01',
         'dataset_id': 'multiobs.projectdb_openalex_2026_01',
-        'total_chunks': 5
+        'total_chunks': 10
     }
 
 

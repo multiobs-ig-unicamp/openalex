@@ -1,0 +1,19 @@
+{
+  "bucket_name": "openalex",
+  "prefix": "data/works/",
+  "entity": "works",
+  "entity_singular": "work",
+  "project_id": "multiobs",
+  "dataset": "projectdb_openalex_2026_01",
+  "dataset_id": "multiobs.projectdb_openalex_2026_01",
+  "total_chunks": 10,
+  "workload_file": "works_objects.csv",
+  "files_job": [
+    "./job_info/chunk_5_works.csv",
+    "./job_info/chunk_6_works.csv",
+    "./job_info/chunk_7_works.csv",
+    "./job_info/chunk_8_works.csv",
+    "./job_info/chunk_9_works.csv"
+  ],
+  "files_job_running": []
+}
