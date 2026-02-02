@@ -13,7 +13,6 @@ from google.cloud import bigquery
 from google.cloud.exceptions import NotFound
 
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG)
 job_info = './job_info/'
 
 def update_job_status(job_oa):
@@ -134,7 +133,7 @@ def download_upload(job_oa):
     bucket_name = job_oa['bucket_name']
     pieces, chunk_file, job_oa = select_chunk(job_oa)
 
-    if len(pieces) > 1:
+    if len(pieces) >= 1:
         for p in pieces:
             logging.info(f"Downloading object: {p}")
             fp = download_object(bucket_name, p)
@@ -199,7 +198,7 @@ def split_job(job_oa, total_chunks):
 
 
 
-def prepare_job(entity, entity_singular):
+def prepare_job(entity, entity_singular, chunks=5):
 
     job_oa = {
         'bucket_name': 'openalex',  
@@ -209,10 +208,10 @@ def prepare_job(entity, entity_singular):
         'project_id': 'multiobs',
         'dataset': 'projectdb_openalex_2026_01',
         'dataset_id': 'multiobs.projectdb_openalex_2026_01',
-        'total_chunks': 5
+        'total_chunks': chunks
     }
 
-
+    logging.basicConfig(filename='job_'+entity+'.log', level=logging.INFO)
     job_oa = configure_job(job_oa)
 
     logging.info(f"Prepared job for entity: {entity}.")
